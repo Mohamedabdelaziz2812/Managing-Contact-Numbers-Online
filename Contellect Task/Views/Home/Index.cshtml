@@ -1,0 +1,236 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <div class="d-flex flex-column flex-column-fluid">
+        <div id="kt_app_toolbar" class="app-toolbar pt-7 pt-lg-10">
+            <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex align-items-stretch">
+                <div class="app-toolbar-wrapper d-flex flex-stack flex-wrap gap-4 w-100">
+                    <div class="page-title d-flex flex-column justify-content-center gap-1 me-3">
+                        <h1 class="page-heading d-flex flex-column justify-content-center text-orange fw-bold fs-3 m-0">Home Page</h1>
+                        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
+                            <li class="breadcrumb-item text-muted">
+                                <a href="#" class="text-success text-hover-primary">Evaluation</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                            </li>
+                            <li class="breadcrumb-item text-muted">Home Page</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="kt_app_content" class="app-content flex-column-fluid">
+            <div id="kt_app_content_container" class="app-container container-fluid">
+                <div class="d-flex flex-column flex-lg-row-fluid gap-5 gap-lg-12">
+                    <div class="card card-flush py-1 mt-5">
+                        <div class="card-header">
+                          
+                            <div class="card-toolbar">
+                                <a class="btn btn-primary" href="/Home/Create">
+                                    Add
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-row-dashed table-bordered table-row-gray-300 gy-7">
+                                    <thead class="bg-light-primary text-dark text-center px-2">
+                                        <tr class="text-start fw-bold fs-7 text-uppercase gs-2">
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>Address</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="editContactModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Contact</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editContactForm">
+                    <input type="hidden" id="editId" name="Id">
+
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" id="editName" name="Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="editPhone" name="Phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" id="editAddress" name="Address" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="UpdateContact()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+
+    <!-- ✅ Add SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            if (!$.fn.DataTable) {
+                console.error("DataTables is not loaded. Check your script references.");
+                return;
+            }
+
+            $.fn.dataTable.ext.errMode = 'throw'; // Prevents silent errors
+            RendernewDataTable();
+        });
+
+        function RendernewDataTable() {
+            if ($.fn.DataTable.isDataTable('.table')) {
+                window.dt.destroy();
+            }
+
+            window.dt = $('.table').DataTable({
+                "dom": 'lBfrtip',
+                  "lengthMenu": [
+            [5, 10, 15, 20],
+            ['5', '10', '15', '20']
+        ],
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": `/Home/GetContactDataTable`,
+                    "type": "POST",
+                    "datatype": "json",
+                    "dataSrc": function (json) {
+                        console.log("Full JSON Response:", json);
+                        return json.data;
+                    }
+                },
+                "columns": [
+                    { "data": "name" },
+                    { "data": "phone" },
+                    { "data": "address" },
+                    {
+                                "render": function (data, type, full) {
+            return `<a href="#" onclick="return OpenModalEdit('${full.id}', '${full.name}', '${full.phone}', '${full.address}')"
+                        class="btn btn-sm btn-success">Edit</a>
+                    <a id="${full.id}" class="btn btn-sm btn-danger delete_btn" onclick="return DeleteStrategy(${full.id})">Delete</a>`;
+        }
+
+                    }
+                ]
+            });
+        }
+
+                function OpenModalEdit(id, name, phone, address) {
+            $("#editId").val(id);
+            $("#editName").val(name);
+            $("#editPhone").val(phone);
+            $("#editAddress").val(address);
+
+            $("#editContactModal").modal('show'); // Open Bootstrap modal
+        }
+
+
+
+                function UpdateContact() {
+            var contactData = {
+                Id: $("#editId").val(),
+                Name: $("#editName").val(),
+                Phone: $("#editPhone").val(),
+                Address: $("#editAddress").val()
+            };
+
+            $.ajax({
+                url: '/Home/Update', // Change to match your controller's action
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(contactData),
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: 'Contact updated successfully.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    $("#editContactModal").modal('hide'); // Close modal
+                    RendernewDataTable(); // Refresh the DataTable
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to update contact. ' + xhr.responseText
+                    });
+                }
+            });
+        }
+
+
+        function DeleteStrategy(Id) {
+            swal.fire({
+                title: "Are You Sure You Want To Delete This Contact?",
+                text: '',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: "Yes",
+                cancelButtonText: "No"
+            }).then(function (data) {
+                if (data.value) {
+                    $.ajax({
+                        url: `/Home/Delete?Id=${Id}`,
+                        dataType: 'json',
+                        contentType: "application/json",
+                        type: "DELETE",
+                        success: function (response) {
+                            if (response) {
+                                // toastr.success($("#delsuccess").val());
+                                RendernewDataTable();
+                            } else {
+                                // toastr.error($("#delfail").val());
+                            }
+                        },
+                        error: function () {
+                            console.log('error');
+                        }
+                    });
+                }
+            }).catch(swal.noop);
+        }
+    </script>
+}

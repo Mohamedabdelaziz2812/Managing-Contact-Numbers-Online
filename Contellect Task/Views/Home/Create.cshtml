@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Create Contact";
+}
+
+<div class="card card-flush py-1 mt-5">
+    <div class="card-header">
+        <div class="card-title">
+            <h2>Create Contact</h2>
+        </div>
+    </div>
+    <div class="card-body">
+        <form id="createContactForm">
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" id="Name" name="Name" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Phone</label>
+                <input type="text" class="form-control" id="Phone" name="Phone" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <input type="text" class="form-control" id="Address" name="Address" required>
+            </div>
+
+          @*   <div class="mb-3">
+                <label class="form-label">Note</label>
+                <textarea class="form-control" id="Note" name="Note" rows="4"></textarea>
+            </div> *@
+            <button onclick="return add()" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+</div>
+
+   @section scripts {
+    <script>
+        $(document).ready(function () {
+            $("#createContactForm").submit(function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                var formData = {
+                    Name: $("#Name").val(),
+                    Phone: $("#Phone").val(),
+                    Address: $("#Address").val(),
+                    // Note: $("#Note").val()
+                };
+
+                $.ajax({
+                    url: '/Home/Create', // Your controller's action URL
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        alert("Contact created successfully!");
+                        window.location.href = "/Home/Index"; // Redirect to listing page
+                    },
+                    error: function (xhr) {
+                        alert("Error: " + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+

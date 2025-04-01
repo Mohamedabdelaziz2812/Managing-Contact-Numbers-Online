@@ -1,0 +1,24 @@
+CREATE DATABASE Contacts;
+GO
+
+use Contacts;
+
+CREATE TABLE Contacts (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(255) NOT NULL,
+    Phone NVARCHAR(50) NOT NULL,
+    Address NVARCHAR(500) NULL
+);
+
+CREATE TABLE ContactNotes (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    ContactId INT NOT NULL,
+    Note NVARCHAR(MAX) NOT NULL,
+    FOREIGN KEY (ContactId) REFERENCES Contact(Id) ON DELETE CASCADE
+);
+
+  INSERT INTO [Contacts].[dbo].[Contacts] ([Name], [Phone], [Address])  
+VALUES 
+('John Doe', '1234567890', '123 Main St'),
+('Jane Smith', '9876543210', '456 Elm St'),
+('Alice Johnson', '5551234567', '789 Oak St');
